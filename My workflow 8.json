@@ -1,0 +1,573 @@
+{
+  "name": "My workflow 8",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=### Persona & Mission ###\nYou are a helpful assistant with memory and knowledge capabilities. Your primary goal is to provide accurate information about products and effective solutions for support issues by using the specific tools provided.\n\n### Context Awareness ###\nThe current date and time is: {{ $now }}\n\n### Tools ###\n\n**1. Tool Name: `Product_Info` (Google Sheets)**\n* **Capability:** Allows you to read any content from the \"Product Info\" Google Sheet. This sheet contains all product information and links.\n* **Instruction:** You MUST use this tool whenever a user asks questions about any product or a related topic.\n* **Process:** When asked about a product, you are to check the \"Product Description\" column to find the relevant information.\n\n**2. Tool Name: `Support_Issue` (Google Sheets)**\n* **Capability:** Allows you to read any content from the \"Support Issue\" Google Sheet.\n* **Instruction:** You MUST use this tool whenever a user reports a support issue, a problem, or asks a question related to a product problem.\n* **Process:** When a user has a problem, you must check the \"Support Problem\" and \"Category\" columns in the sheet. Then, find the corresponding answer in the \"Solution\" column to provide the correct resolution.\n\n### Core Rules ###\n* **Grounded Responses:** You MUST always base your answers on the information retrieved from the Google Sheets tools. NEVER answer from your own knowledge or creativity.\n* **Stealth Operation:** You must NEVER tell the user that you are using Google Sheets to retrieve the data. Act as if you know the information directly.\n\nMemory Handling (Supabase - \"Store_Memory\")\nYou have access to Supabase tools for memory storage and retrieval.\n\nCall the \"Get_Memory\" tool to retrieve past interactions before responding.\n\nEvery response must use previous memory to guide the user towards a decision.\n\n#Rule: You must ALWAYS use the \"Store_Memory\" tool before every response save any new insight you learned about the user.\nWhat to store in memory?\n\nWhat the user is looking for.\nTheir problems, objections, and challenges.\nWhat products they are interested in.\nKey insights about their needs.\nRule: Before generating any response, always retrieve relevant memories from Supabase (\"Get_Memory\") and update them when new information is learned.\n\nIf your prompt input is a description of an image then you need to respond accordingly. Becasue users also have the ability to upload images, of errors, poroduct issues or anything related to the products in your database."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -224
+      ],
+      "id": "876b3be9-ad78-40b1-9712-2da8abeeaed2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a505d4fd-6039-4207-8dfe-2d6bc49c934a",
+              "name": "messages[0].text.body",
+              "value": "={{ $json.messages[0].text.body }}",
+              "type": "string"
+            },
+            {
+              "id": "bda20d7b-392c-4135-be12-e556e7c2f1ce",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        -96
+      ],
+      "id": "62f61089-e4dc-4246-9a17-994e61dac94f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        48
+      ],
+      "id": "9252c193-256b-4893-9a75-2a88e694ec63",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Tv2hLw52ijI9oMvk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        32
+      ],
+      "id": "0c7a3e26-6985-4b77-ae01-3351334ae035",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        -240
+      ],
+      "id": "9f757680-a3d1-4aa0-94d6-33795fa1da17",
+      "name": "WhatsApp Trigger",
+      "webhookId": "ab3a198b-e1a0-4f1b-8cba-0379a55b5ea4",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "hd3T5nbDEIqI6QOg",
+          "name": "WhatsApp OAuth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "733720876499204",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -240
+      ],
+      "id": "beec306a-4bb2-48f8-af8b-37bf637f4c49",
+      "name": "Send message",
+      "webhookId": "dce81394-f5a3-4f39-8e18-c446e3fa86c1",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "c5FsrYxybiBrjRrl",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g",
+          "mode": "list",
+          "cachedResultName": "COOL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1026308237,
+          "mode": "list",
+          "cachedResultName": "Support_Issue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g/edit#gid=1026308237"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically",
+              "readRowsUntil": "firstEmptyRow"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        48
+      ],
+      "id": "e80006b4-05d9-4738-a464-2080e66c103f",
+      "name": "SUPPORT",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Fc8cFWl07IqByUhQ",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g",
+          "mode": "list",
+          "cachedResultName": "COOL",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Product_Info",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HsFWEKWj6auUkTZvzI5MA-o_hKDl_Y_YjPAvlh2ou4g/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically",
+              "readRowsUntil": "firstEmptyRow"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -64,
+        48
+      ],
+      "id": "cc0381b4-bc1c-4a27-894b-4062536fb5bf",
+      "name": "PRODUCT INFO",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Fc8cFWl07IqByUhQ",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "agent n8n",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "memory",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "sessionid",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues1_Field_Value', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        64,
+        64
+      ],
+      "id": "953015dd-2db6-44a4-be2a-d848d3ebe269",
+      "name": "store_memory",
+      "credentials": {
+        "supabaseApi": {
+          "id": "nPLtzmQ2Cyl3A0Mi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "agent n8n",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        192,
+        48
+      ],
+      "id": "23db8f78-8f54-4695-a866-a1b1ced738cc",
+      "name": "get_memory",
+      "credentials": {
+        "supabaseApi": {
+          "id": "nPLtzmQ2Cyl3A0Mi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7efddae6-44f5-4857-bf7b-0e796efa4680",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f4c1fd7f-2e39-4eca-9838-0e5646ec3365"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -848,
+        -240
+      ],
+      "id": "9b136369-3060-4091-b740-cbe4643c375f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('WhatsApp Trigger').item.json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -368
+      ],
+      "id": "5c00a7bd-ac9f-43df-9b5b-d6c125fae214",
+      "name": "Download media",
+      "webhookId": "efd27611-48f0-42d3-8f90-19cd06fadc8b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "c5FsrYxybiBrjRrl",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authentication",
+              "value": "bearer EAAXF4kQSaKIBPcuFuGN2JV0OARbnnIqaR18O432Bgg4WTpajjqmYrSl8lHlgRxsmjNKhJrvOgqyjqdtCznQMyaDEdazXaFZAcSYZCYFV9w0Imn6qbSyrVnX0TqfC83UWVIERZAcgT9c9g68JGFmi9gOl9ZCqRKZAlFyOSO3FlG94tkvDAPSZABgMXLkXlsOAD6cW09ZAoUMun1FllOdefjZAMREeZBjbzvOxHup38YpVljL8ZD"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        -384
+      ],
+      "id": "076f22a7-e974-40e8-9da2-05a4722071a3",
+      "name": "HTTP Request",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "c5FsrYxybiBrjRrl",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -368
+      ],
+      "id": "7837bf72-4f91-4d0e-8f94-3e23b5e3aa1a",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Tv2hLw52ijI9oMvk",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SUPPORT": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PRODUCT INFO": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Download media",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download media": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "67cf2bf0-eb92-4833-b3a4-158b230948a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a5511fe490822ba0f5cedc6939f58e9252f71178ae79f1750e6c88d9dff34b4"
+  },
+  "id": "KyS3FOqH9ANg08Rj",
+  "tags": []
+}
