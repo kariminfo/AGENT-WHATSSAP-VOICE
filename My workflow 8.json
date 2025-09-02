@@ -69,7 +69,8 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].id }}"
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].id }}",
+        "inputKey": "={{ $json.messages[0].type === 'text' ? $json.messages[0].text.body : $('Transcribe a recording').item.json.text }}"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
